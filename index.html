@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>password-generator - salivity.github.io</title>
+    <meta name="description" content="Generate bulk, highly-customizable passwords instantly. Configure length, characters, and exclusions to create secure, unique passwords securely in your browser.">
+    <link rel="canonical" href="https://salivity.github.io/password-generator/">
+    <link rel="manifest" href="/password-generator/pwa/manifest.json">
+    
+    <meta property="og:title" content="password-generator - salivity.github.io">
+    <meta property="og:description" content="Generate bulk, highly-customizable passwords instantly. Configure length, characters, and exclusions to create secure, unique passwords securely in your browser.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://salivity.github.io/password-generator/">
+    <meta property="og:image" content="https://salivity.github.io/password-generator/password-generator/images/open-graph/default.webp">
+    <meta property="og:image:secure_url" content="https://salivity.github.io/password-generator/password-generator/images/open-graph/default.webp">
+    <link rel="icon" href="/password-generator/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* Typography and Local Fonts */
+        @font-face {
+            font-family: 'IBM Plex Mono';
+            src: url('/password-generator/fonts/IBM-Plex-Mono-Regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Open Sans';
+            src: url('/password-generator/fonts/Open-Sans-Regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Variables */
+        :root {
+            --bg-color: #f4f4f5;
+            --surface-color: #ffffff;
+            --text-color: #18181b;
+            --text-muted: #52525b;
+            --border-color: #e4e4e7;
+            --primary-color: #2563eb;
+            --hover-color: #1d4ed8;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --strength-weak: #ef4444;
+            --strength-medium: #eab308;
+            --strength-strong: #22c55e;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #09090b;
+            --surface-color: #18181b;
+            --text-color: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --border-color: #27272a;
+            --primary-color: #3b82f6;
+            --hover-color: #2563eb;
+        }
+
+        /* Reset & Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            -webkit-text-size-adjust: 100%;
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-link {
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 1.25rem;
+            font-stretch: condensed;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        nav button, nav a {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        [data-theme="light"] .icon-dark { display: none; }
+        [data-theme="dark"] .icon-light { display: none; }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .description {
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-direction: row;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button.primary, button.secondary, button.danger {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        button.primary { background-color: var(--primary-color); }
+        button.primary:hover { background-color: var(--hover-color); }
+        
+        button.danger { background-color: var(--danger-color); }
+        button.danger:hover { background-color: var(--danger-hover); }
+
+        /* Output & Editor Area */
+        .strength-container {
+            margin-bottom: 1rem;
+        }
+        
+        .strength-bar-bg {
+            background-color: var(--border-color);
+            height: 10px;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .strength-bar-fill {
+            height: 100%;
+            width: 0%;
+        }
+
+        .editor {
+            display: flex;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            border-radius: 4px;
+            height: 300px;
+            font-size: 14px !important;
+            line-height: 1.5 !important; /* Always use a unitless multiplier or exact px value */
+        }
+
+        .line-numbers {
+            padding: 1rem 0.5rem;
+            background-color: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-muted);
+            text-align: right;
+            font-family: 'IBM Plex Mono', monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        textarea {
+            flex-grow: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            font-family: 'IBM Plex Mono', monospace;
+            resize: none;
+            outline: none;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="https://salivity.github.io/password-generator/" class="logo-link">
+            salivity.github.io/<strong>password-generator</strong>
+        </a>
+        <nav>
+            <ul>
+                <li>
+                    <a href="https://github.com/salivity" target="_blank" aria-label="GitHub Repository">
+                        <svg class="svg-icon" focusable="false" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 1.27a11 11 0 00-3.48 21.46c.55.09.73-.28.73-.55v-1.84c-3.03.64-3.67-1.46-3.67-1.46-.55-1.29-1.28-1.65-1.28-1.65-.92-.65.1-.65.1-.65 1.1 0 1.73 1.1 1.73 1.1.92 1.65 2.57 1.2 3.21.92a2 2 0 01.64-1.47c-2.47-.27-5.04-1.19-5.04-5.5 0-1.1.46-2.1 1.2-2.84a3.76 3.76 0 010-2.93s.91-.28 3.11 1.1c1.8-.49 3.7-.49 5.5 0 2.1-1.38 3.02-1.1 3.02-1.1a3.76 3.76 0 010 2.93c.83.74 1.2 1.74 1.2 2.94 0 4.21-2.57 5.13-5.04 5.4.45.37.82.92.82 2.02v3.03c0 .27.1.64.73.55A11 11 0 0012 1.27"></path></svg>
+                    </a>
+                </li>
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle Theme">
+                        <svg class="svg-icon icon-light" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5M2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1m18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1M11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1m0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1M5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0z"></path></svg>
+                        <svg class="svg-icon icon-dark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1"></path></svg>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <h1>
+            Password Generator
+        </h1>
+        <div class="description">
+            <p>Welcome to the bulk password generator. This tool allows you to securely create large volumes of custom, unique passwords directly in your browser. Whether you are provisioning accounts for a new team or establishing unique credentials for a database, this utility ensures speed and local security.</p>
+            <p>Use the rules below to finely tune the character sets, limits, and behavior. All generations happen locally on your device.</p>
+        </div>
+
+        <div class="card">
+            <h2>General Configuration</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" min="1" max="10000" value="10">
+                </div>
+                <div class="form-group">
+                    <label for="length">Length</label>
+                    <input type="number" id="length" min="4" max="256" value="16">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Character Rules</h2>
+            <div class="form-grid">
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="inc-numbers" checked>
+                    <label for="inc-numbers">Numbers (0-9)</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="inc-letters" checked>
+                    <label for="inc-letters">Letters (a-z)</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="inc-uppercase" checked>
+                    <label for="inc-uppercase">Uppercase (A-Z)</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="inc-lowercase" checked>
+                    <label for="inc-lowercase">Lowercase (a-z)</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="inc-special" checked>
+                    <label for="inc-special">Special Characters (!@#...)</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="allow-consecutive" checked>
+                    <label for="allow-consecutive">Allow Consecutive</label>
+                </div>
+                <div class="form-group-checkbox">
+                    <input type="checkbox" id="allow-duplicates" checked>
+                    <label for="allow-duplicates">Allow Duplicates</label>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label for="exclude-chars">Exclude Characters</label>
+                <input type="text" id="exclude-chars" placeholder="e.g. iIlL1oO0">
+            </div>
+
+            <div class="btn-group">
+                <button class="primary" id="btn-generate">Generate Passwords</button>
+                <button class="danger" id="btn-clear">Clear Settings</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="strength-container">
+                <span id="strength-text">Password Strength: -</span>
+                <div class="strength-bar-bg">
+                    <div class="strength-bar-fill" id="strength-fill"></div>
+                </div>
+            </div>
+
+            <div class="editor">
+                <div class="line-numbers" id="line-numbers">1</div>
+                <textarea id="output-area" readonly wrap="off" aria-label="Generated Passwords"></textarea>
+            </div>
+            
+            <div class="btn-group">
+                <button class="primary" id="btn-export">Export Plain Text</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p id="copyright-text"></p>
+    </footer>
+
+    <script>
+        // Data and State
+        const STORAGE_PREFIX = 'password-generator.';
+        const CHAR_SETS = {
+            numbers: '0123456789',
+            lowercase: 'abcdefghijklmnopqrstuvwxyz',
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            special: '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+        };
+
+        const defaultSettings = {
+            'quantity': 10,
+            'length': 16,
+            'inc-numbers': true,
+            'inc-letters': true,
+            'inc-uppercase': true,
+            'inc-lowercase': true,
+            'inc-special': true,
+            'allow-consecutive': true,
+            'allow-duplicates': true,
+            'exclude-chars': ''
+        };
+
+        // DOM Elements
+        const elements = {
+            quantity: document.getElementById('quantity'),
+            length: document.getElementById('length'),
+            incNumbers: document.getElementById('inc-numbers'),
+            incLetters: document.getElementById('inc-letters'),
+            incUppercase: document.getElementById('inc-uppercase'),
+            incLowercase: document.getElementById('inc-lowercase'),
+            incSpecial: document.getElementById('inc-special'),
+            allowConsecutive: document.getElementById('allow-consecutive'),
+            allowDuplicates: document.getElementById('allow-duplicates'),
+            excludeChars: document.getElementById('exclude-chars'),
+            btnGenerate: document.getElementById('btn-generate'),
+            btnClear: document.getElementById('btn-clear'),
+            btnExport: document.getElementById('btn-export'),
+            outputArea: document.getElementById('output-area'),
+            lineNumbers: document.getElementById('line-numbers'),
+            strengthText: document.getElementById('strength-text'),
+            strengthFill: document.getElementById('strength-fill'),
+            themeToggle: document.getElementById('theme-toggle'),
+            copyrightText: document.getElementById('copyright-text')
+        };
+
+        // Initialization
+        function init() {
+            elements.copyrightText.innerText = `Copyright © ${new Date().getFullYear()}`;
+            loadSettings();
+            setupEventListeners();
+            updateLineNumbers();
+            syncTheme();
+        }
+
+        // Theme Management
+        function syncTheme() {
+            const savedTheme = localStorage.getItem(STORAGE_PREFIX + 'theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem(STORAGE_PREFIX + 'theme', newTheme);
+        }
+
+        // Local Storage Sync
+        function saveSetting(key, value) {
+            localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+        }
+
+        function loadSettings() {
+            Object.keys(defaultSettings).forEach(key => {
+                const el = document.getElementById(key);
+                const saved = localStorage.getItem(STORAGE_PREFIX + key);
+                
+                let value = saved !== null ? JSON.parse(saved) : defaultSettings[key];
+
+                if (el.type === 'checkbox') {
+                    el.checked = value;
+                } else {
+                    el.value = value;
+                }
+            });
+        }
+
+        function resetSettings() {
+            Object.keys(defaultSettings).forEach(key => {
+                const el = document.getElementById(key);
+                if (el.type === 'checkbox') {
+                    el.checked = defaultSettings[key];
+                } else {
+                    el.value = defaultSettings[key];
+                }
+                saveSetting(key, defaultSettings[key]);
+            });
+            elements.outputArea.value = '';
+            updateLineNumbers();
+            updateStrength(0);
+        }
+
+        // Sync Scrolling for Line Numbers
+        elements.outputArea.addEventListener('scroll', () => {
+            elements.lineNumbers.scrollTop = elements.outputArea.scrollTop;
+        });
+
+        function updateLineNumbers() {
+            const lines = elements.outputArea.value.split('\n').length;
+            elements.lineNumbers.innerHTML = Array.from({length: lines || 1}, (_, i) => i + 1).join('<br>');
+        }
+
+        // Generation Logic
+        function generatePasswords() {
+            const qty = parseInt(elements.quantity.value);
+            const len = parseInt(elements.length.value);
+            const exclude = elements.excludeChars.value.split('');
+            const allowDupes = elements.allowDuplicates.checked;
+            const allowConsecutive = elements.allowConsecutive.checked;
+
+            let pool = '';
+            if (elements.incNumbers.checked) pool += CHAR_SETS.numbers;
+            if (elements.incLetters.checked) {
+                if (elements.incLowercase.checked) pool += CHAR_SETS.lowercase;
+                if (elements.incUppercase.checked) pool += CHAR_SETS.uppercase;
+            }
+            if (elements.incSpecial.checked) pool += CHAR_SETS.special;
+
+            // Remove Exclusions
+            if (exclude.length > 0) {
+                const regex = new RegExp(`[${exclude.join('').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`, 'g');
+                pool = pool.replace(regex, '');
+            }
+
+            if (pool.length === 0) {
+                alert('Character pool is empty. Please check your settings.');
+                return;
+            }
+
+            if (!allowDupes && len > pool.length) {
+                alert('Length is greater than the available character pool, but duplicates are disabled. Please allow duplicates or increase the character pool.');
+                return;
+            }
+
+            let passwords = [];
+            for (let i = 0; i < qty; i++) {
+                let pwd = '';
+                let tempPool = pool.split('');
+
+                for (let j = 0; j < len; j++) {
+                    let char = '';
+                    let attempts = 0;
+                    let validChar = false;
+
+                    while (!validChar && attempts < 100) {
+                        const randomIndex = Math.floor(Math.random() * tempPool.length);
+                        char = tempPool[randomIndex];
+
+                        validChar = true;
+                        
+                        if (!allowConsecutive && j > 0 && pwd[j - 1] === char) {
+                            validChar = false;
+                        }
+
+                        if (!allowDupes && pwd.includes(char)) {
+                            validChar = false;
+                        }
+
+                        attempts++;
+                    }
+                    
+                    if (validChar) {
+                        pwd += char;
+                    } else {
+                        // Fallback if strict constraints cannot be met mid-generation
+                        pwd += tempPool[Math.floor(Math.random() * tempPool.length)];
+                    }
+                }
+                passwords.push(pwd);
+            }
+
+            elements.outputArea.value = passwords.join('\n');
+            updateLineNumbers();
+            calculateStrength(len, pool.length);
+        }
+
+        // Strength Calculation
+        function calculateStrength(length, poolSize) {
+            if (!poolSize || !length) {
+                updateStrength(0);
+                return;
+            }
+            // Basic entropy calculation E = L * log2(R)
+            const entropy = length * (Math.log(poolSize) / Math.log(2));
+            
+            let strength = 0;
+            if (entropy < 40) strength = 1; // Weak
+            else if (entropy < 80) strength = 2; // Medium
+            else strength = 3; // Strong
+
+            updateStrength(strength);
+        }
+
+        function updateStrength(level) {
+            const fill = elements.strengthFill;
+            const text = elements.strengthText;
+
+            if (level === 0) {
+                fill.style.width = '0%';
+                text.innerText = 'Password Strength: -';
+            } else if (level === 1) {
+                fill.style.width = '33%';
+                fill.style.backgroundColor = 'var(--strength-weak)';
+                text.innerText = 'Password Strength: Weak';
+            } else if (level === 2) {
+                fill.style.width = '66%';
+                fill.style.backgroundColor = 'var(--strength-medium)';
+                text.innerText = 'Password Strength: Medium';
+            } else if (level === 3) {
+                fill.style.width = '100%';
+                fill.style.backgroundColor = 'var(--strength-strong)';
+                text.innerText = 'Password Strength: Strong';
+            }
+        }
+
+        // Export functionality
+        function exportPasswords() {
+            const text = elements.outputArea.value;
+            if (!text) return;
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `passwords-${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            elements.themeToggle.addEventListener('click', toggleTheme);
+            elements.btnGenerate.addEventListener('click', generatePasswords);
+            elements.btnClear.addEventListener('click', resetSettings);
+            elements.btnExport.addEventListener('click', exportPasswords);
+
+            // Save settings on change
+            Object.keys(defaultSettings).forEach(key => {
+                const el = document.getElementById(key);
+                el.addEventListener('change', (e) => {
+                    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                    saveSetting(key, val);
+                });
+            });
+        }
+
+        // Boot
+        init();
+    </script>
+</body>
+</html>
